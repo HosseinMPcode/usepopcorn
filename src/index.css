@@ -54,10 +54,14 @@ body {
   max-width: 42rem;
   background-color: var(--color-background-500);
   border-radius: 0.9rem;
-  overflow: hidden;
+  overflow: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
   position: relative;
 }
-
+.box::-webkit-scrollbar {
+  display: none;
+}
 .loader {
   text-align: center;
   text-transform: uppercase;
