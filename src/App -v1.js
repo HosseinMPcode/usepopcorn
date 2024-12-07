@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -7,16 +7,10 @@ const KEY = "cdd7f57f";
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [query, setQuery] = useState("john wick");
+  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedID, setSelectedId] = useState(null);
-
-  // const [watched, setWatched] = useState([]);
-  const [watched, setWatched] = useState(function () {
-    const storedValue = localStorage.getItem("watched");
-    return JSON.parse(storedValue);
-  });
-
   const handleSelectMovie = function (id) {
     setSelectedId(selectedID === id ? null : id);
   };
@@ -42,12 +36,6 @@ export default function App() {
       watched.filter((movie) => movie.imdbID !== watchedMovieID)
     );
   };
-  useEffect(
-    function () {
-      localStorage.setItem("watched", JSON.stringify(watched));
-    },
-    [watched]
-  );
   useEffect(
     function () {
       const controller = new AbortController();
@@ -141,28 +129,6 @@ function Logo() {
   );
 }
 function SearchInput({ query, setQuery }) {
-  const inputEl = useRef(null);
-  useEffect(
-    function () {
-      function callback(e) {
-        if (document.activeElement === inputEl.current) return;
-        if (e.code === "Enter") {
-          inputEl.current.focus();
-          setQuery("");
-        }
-      }
-      document.addEventListener("keydown", callback);
-      // inputEl.current.focus();
-
-      return () => document.removeEventListener("keydown", callback);
-    },
-    [setQuery]
-  );
-
-  // useEffect(function () {
-  //   const el = document.querySelector(".search");
-  //   el.focus();
-  // }, []);
   return (
     <input
       className="search"
@@ -170,7 +136,6 @@ function SearchInput({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
-      ref={inputEl}
     />
   );
 }
@@ -237,15 +202,6 @@ function MovieDetails({ id, onCloseMovie, onWatchedMovies }) {
     Director: director,
     Genre: genre,
   } = movie;
-
-  const countRef = useRef(0);
-  useEffect(
-    function () {
-      if (userRating) countRef.current++;
-    },
-    [userRating]
-  );
-
   const handleAddToMovieList = function () {
     const newWatched = {
       imdbID: id,
@@ -254,12 +210,10 @@ function MovieDetails({ id, onCloseMovie, onWatchedMovies }) {
       runtime: Number(runtime.split(" ").at(0)),
       imdbRating: Number(imdbRating),
       userRating,
-      countRatingDecisions: countRef.current,
     };
     onWatchedMovies(newWatched);
     onCloseMovie();
   };
-
   useEffect(
     function () {
       if (!title) return;
@@ -271,6 +225,7 @@ function MovieDetails({ id, onCloseMovie, onWatchedMovies }) {
     },
     [title]
   );
+
   useEffect(
     function () {
       async function getMovieDetails() {
@@ -286,6 +241,7 @@ function MovieDetails({ id, onCloseMovie, onWatchedMovies }) {
     },
     [id]
   );
+
   useEffect(
     function () {
       const callback = function (e) {
